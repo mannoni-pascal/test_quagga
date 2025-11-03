@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Scanner un code-barres avec QuaggaJS</title>
+  <style>
+    #video-container {
+      width: 100%;
+      max-width: 400px;
+      margin: auto;
+      position: relative;
+    }
+    video {
+      width: 100%;
+      border: 2px solid #333;
+    }
+    #result {
+      text-align: center;
+      font-size: 1.2em;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+<h2 style="text-align:center;">Scanner un code-barres</h2>
+<div id="video-container">
+  <div id="interactive" class="viewport"></div>
+</div>
+<p id="result">Aucun code détecté</p>
+
+<script src="https://unpkg.com/quagga/dist/quagga.min.js"></script>
+<script>
+  // Vérifie que la caméra est disponible
+  if (navigator.mediaDevices && typeof Quagga !== "undefined") {
+    Quagga.init({
+      inputStream: {
+        name: "Live",
+        type: "LiveStream",
+        target: document.querySelector('#interactive'),
+        constraints: {
+          facingMode: "environment" // utilise la caméra arrière
+        }
+      },
+      decoder: {
+        readers: [
+          "code_128_reader", // tu peux ajouter d’autres formats
+          "ean_reader",
+          "ean_8_reader",
+          "code_39_reader",
+          "upc_reader",
+          "upc_e_reader"
+        ]
+      }
+    }, function (err) {
+      if (err) {
+        console.error(err);
+        return;
+      }
+      console.log("Quagga prêt, démarrage du scanner");
+      Quagga.start();
+    });
+
+    // Quand un code est détecté
+    Quagga.onDetected(function (result) {
+      const code = result.codeResult.code;
+      document.getElementById("result").textContent = "Code détecté : " + code;
+
+      // Tu peux arrêter le scanner après lecture
+      Quagga.stop();
+    });
+  } else {
+    alert("Caméra non disponible ou Quagga non chargé");
+  }
+</script>
+
+</body>
+</html>
