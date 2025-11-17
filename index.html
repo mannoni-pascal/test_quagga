@@ -19,18 +19,32 @@
       font-size: 1.2em;
       margin-top: 10px;
     }
+    #start-button {
+      display: none;
+      margin: 20px auto;
+      padding: 10px 20px;
+      font-size: 1em;
+      display: block;
+    }
   </style>
 </head>
 <body>
-<h2 style="text-align:center;">Scanner un code-barres v3</h2>
+<h2 style="text-align:center;">Scanner un code-barres v4</h2>
+
 <div id="video-container">
   <div id="interactive" class="viewport"></div>
 </div>
+
 <p id="result">Aucun code détecté</p>
+
+<button id="start-button">Démarrer le scanner</button>
+
 <script src="https://unpkg.com/quagga/dist/quagga.min.js"></script>
 <script>
-  // Vérifie que la caméra est disponible
-  if (navigator.mediaDevices && typeof Quagga !== "undefined") {
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  const startButton = document.getElementById("start-button");
+
+  function startScanner() {
     Quagga.init({
       inputStream: {
         name: "Live",
@@ -39,7 +53,7 @@
       },
       decoder: {
         readers: [
-          "code_128_reader", // tu peux ajouter d’autres formats
+          "code_128_reader",
           "ean_reader",
           "ean_8_reader",
           "code_39_reader",
@@ -52,20 +66,39 @@
         console.error(err);
         return;
       }
-      console.log("Quagga prêt, démarrage du scanner");
       Quagga.start();
+
+      // Forcer muted + playsinline sur la vidéo
+      const video = document.querySelector("#interactive video");
+      if (video) {
+        video.muted = true;
+        video.setAttribute("muted", "");
+        video.setAttribute("playsinline", "");
+        video.play().catch(e => console.log("play() échoué :", e));
+      }
+
+      // Masquer le bouton après le démarrage
+      startButton.style.display = "none";
+      console.log("Scanner démarré !");
     });
-    // Quand un code est détecté
+
     Quagga.onDetected(function (result) {
       const code = result.codeResult.code;
       document.getElementById("result").textContent = "Code détecté : " + code;
-      // Tu peux arrêter le scanner après lecture
-      Quagga.stop();
+      // Quagga.stop(); // décommenter si tu veux arrêter après un code
     });
+  }
+
+  if (navigator.mediaDevices && typeof Quagga !== "undefined") {
+    if (isMobile) {
+      startButton.style.display = "block";
+      startButton.addEventListener("click", startScanner);
+    } else {
+      startScanner(); // desktop : démarrage automatique
+    }
   } else {
     alert("Caméra non disponible ou Quagga non chargé");
   }
 </script>
 </body>
 </html>
- 
