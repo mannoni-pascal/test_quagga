@@ -25,7 +25,9 @@
 
 <h2 style="text-align:center;">Scanner un code-barres</h2>
 <div id="video-container">
-  <div id="interactive" class="viewport"></div>
+  <div id="interactive" class="viewport">
+    <video muted playsinline></video>
+  </div>
 </div>
 <p id="result">Aucun code détecté</p>
 
@@ -37,7 +39,7 @@
       inputStream: {
         name: "Live",
         type: "LiveStream",
-        target: document.querySelector('#interactive'),
+         target: document.querySelector("#interactive video"),
         constraints: {
           facingMode: "environment" // utilise la caméra arrière
         }
@@ -60,12 +62,6 @@
       console.log("Quagga prêt, démarrage du scanner");
       Quagga.start();
     });
-    const video = document.querySelector("video");
-    if (video) {
-        video.setAttribute("muted", "");
-        video.muted = true;          // nécessaire sur certains navigateurs
-        video.setAttribute("playsinline", ""); // obligatoire sur iOS
-    }
     // Quand un code est détecté
     Quagga.onDetected(function (result) {
       const code = result.codeResult.code;
