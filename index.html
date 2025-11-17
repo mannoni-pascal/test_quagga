@@ -1,104 +1,101 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <title>Scanner un code-barres avec QuaggaJS</title>
-  <style>
-    #video-container {
-      width: 100%;
-      max-width: 400px;
-      margin: auto;
-      position: relative;
-    }
-    video {
-      width: 100%;
-      border: 2px solid #333;
-    }
-    #result {
-      text-align: center;
-      font-size: 1.2em;
-      margin-top: 10px;
-    }
-    #start-button {
-      display: none;
-      margin: 20px auto;
-      padding: 10px 20px;
-      font-size: 1em;
-      display: block;
-    }
-  </style>
+<meta charset="UTF-8">
+<title>Scanner un code-barres avec QuaggaJS</title>
+<style>
+  #video-container {
+    width: 100%;
+    max-width: 400px;
+    margin: auto;
+    position: relative;
+  }
+  video {
+    width: 100%;
+    border: 2px solid #333;
+  }
+  #result {
+    text-align: center;
+    font-size: 1.2em;
+    margin-top: 10px;
+  }
+  #start-button {
+    display: none;
+    margin: 20px auto;
+    padding: 10px 20px;
+    font-size: 1em;
+    display: block;
+  }
+</style>
 </head>
 <body>
-<h2 style="text-align:center;">Scanner un code-barres v4</h2>
+
+<h2 style="text-align:center;">Scanner un code-barres v18</h2>
 
 <div id="video-container">
   <div id="interactive" class="viewport"></div>
 </div>
 
 <p id="result">Aucun code détecté</p>
-
 <button id="start-button">Démarrer le scanner</button>
 
 <script src="https://unpkg.com/quagga/dist/quagga.min.js"></script>
 <script>
-  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-  const startButton = document.getElementById("start-button");
+const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+const startButton = document.getElementById("start-button");
+const videoContainer = document.getElementById('interactive');
 
-  function startScanner() {
-    Quagga.init({
-      inputStream: {
-        name: "Live",
-        type: "LiveStream",
-        target: document.querySelector('#interactive')
-      },
-      decoder: {
-        readers: [
-          "code_128_reader",
-          "ean_reader",
-          "ean_8_reader",
-          "code_39_reader",
-          "upc_reader",
-          "upc_e_reader"
-        ]
+function initQuagga(videoElement=null) {
+  Quagga.init({
+    inputStream: {
+      name: "Live",
+      type: "LiveStream",
+      target: videoElement || videoContainer, // utiliser un flux existant si fourni
+      constraints: {
+        width: 640,
+        height: 480
       }
-    }, function (err) {
-      if (err) {
-        console.error(err);
-        return;
-      }
-      Quagga.start();
-
-      // Forcer muted + playsinline sur la vidéo
-      const video = document.querySelector("#interactive video");
-      if (video) {
-        video.muted = true;
-        video.setAttribute("muted", "");
-        video.setAttribute("playsinline", "");
-        video.play().catch(e => console.log("play() échoué :", e));
-      }
-
-      // Masquer le bouton après le démarrage
-      startButton.style.display = "none";
-      console.log("Scanner démarré !");
-    });
-
-    Quagga.onDetected(function (result) {
-      const code = result.codeResult.code;
-      document.getElementById("result").textContent = "Code détecté : " + code;
-      // Quagga.stop(); // décommenter si tu veux arrêter après un code
-    });
-  }
-
-  if (navigator.mediaDevices && typeof Quagga !== "undefined") {
-    if (isMobile) {
-      startButton.style.display = "block";
-      startButton.addEventListener("click", startScanner);
-    } else {
-      startScanner(); // desktop : démarrage automatique
+    },
+    decoder: {
+      readers: [
+        "code_128_reader",
+        "ean_reader",
+        "ean_8_reader",
+        "code_39_reader",
+        "upc_reader",
+        "upc_e_reader"
+      ]
     }
-  } else {
-    alert("Caméra non disponible ou Quagga non chargé");
-  }
-</script>
-</body>
-</html>
+  }, function(err) {
+    if (err) { console.error(err); return; }
+
+    Quagga.start();
+
+    // Si un élément vidéo existe, forcer muted + playsinline
+    const video = videoElement || document.querySelector("#interactive video");
+    if(video) {
+      video.muted = true;
+      video.setAttribute("muted", "");
+      video.setAttribute("playsinline", "");
+      video.play().catch(e => console.log("play() échoué :", e));
+    }
+
+    startButton.style.display = "none";
+    console.log("Scanner démarré !");
+  });
+
+  Quagga.onDetected(function(result) {
+    const code = result.codeResult.code;
+    document.getElementById("result").textContent = "Code détecté : " + code;
+    // Quagga.stop(); // décommenter si tu veux arrêter après un code
+  });
+}
+
+function startScanner() {
+  // Essayer d'utiliser getUserMedia pour contourner les bloqueurs Chrome/IOS
+  navigator.mediaDevices.getUserMedia({ video: true })
+    .then(stream => {
+      const videoEl = document.createElement('video');
+      videoEl.srcObject = stream;
+      videoEl.muted = true;
+      videoEl.setAttribute("playsinlin
