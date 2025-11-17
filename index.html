@@ -19,42 +19,27 @@
       font-size: 1.2em;
       margin-top: 10px;
     }
-    #start-button {
-      display: none; /* on affichera uniquement sur mobile si nécessaire */
-      margin: 20px auto;
-      padding: 10px 20px;
-      font-size: 1em;
-      display: block;
-    }
   </style>
 </head>
 <body>
-
-<h2 style="text-align:center;">Scanner un code-barres v2</h2>
-
+<h2 style="text-align:center;">Scanner un code-barres v3</h2>
 <div id="video-container">
   <div id="interactive" class="viewport"></div>
 </div>
-
 <p id="result">Aucun code détecté</p>
-
-<button id="start-button">Démarrer le scanner</button>
-
 <script src="https://unpkg.com/quagga/dist/quagga.min.js"></script>
 <script>
-  function startScanner() {
+  // Vérifie que la caméra est disponible
+  if (navigator.mediaDevices && typeof Quagga !== "undefined") {
     Quagga.init({
       inputStream: {
         name: "Live",
         type: "LiveStream",
-        target: document.querySelector("#interactive"),
-        constraints: {
-          facingMode: "environment"
-        }
+        target: document.querySelector('#interactive')
       },
       decoder: {
         readers: [
-          "code_128_reader",
+          "code_128_reader", // tu peux ajouter d’autres formats
           "ean_reader",
           "ean_8_reader",
           "code_39_reader",
@@ -62,53 +47,25 @@
           "upc_e_reader"
         ]
       }
-    }, function(err) {
+    }, function (err) {
       if (err) {
         console.error(err);
         return;
       }
-
+      console.log("Quagga prêt, démarrage du scanner");
       Quagga.start();
-
-      // Assurer que la vidéo est muted et playsinline
-      const video = document.querySelector("#interactive video");
-      if (video) {
-        video.muted = true;
-        video.setAttribute("muted", "");
-        video.setAttribute("playsinline", "");
-      }
-
-      // Masquer le bouton sur mobile
-      document.getElementById("start-button").style.display = "none";
-      console.log("Scanner démarré !");
     });
-
-    // Détection d'un code-barres
-    Quagga.onDetected(function(result) {
+    // Quand un code est détecté
+    Quagga.onDetected(function (result) {
       const code = result.codeResult.code;
       document.getElementById("result").textContent = "Code détecté : " + code;
-      // Arrêter le scanner si tu veux
-      // Quagga.stop();
+      // Tu peux arrêter le scanner après lecture
+      Quagga.stop();
     });
-  }
-
-  // Vérifie si c'est mobile (simplifié)
-  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-
-  if (navigator.mediaDevices && typeof Quagga !== "undefined") {
-    if (isMobile) {
-      // Sur mobile, afficher le bouton pour lancer le scanner
-      const btn = document.getElementById("start-button");
-      btn.style.display = "block";
-      btn.addEventListener("click", startScanner);
-    } else {
-      // Sur desktop, démarrage automatique
-      startScanner();
-    }
   } else {
     alert("Caméra non disponible ou Quagga non chargé");
   }
 </script>
-
 </body>
 </html>
+ 
