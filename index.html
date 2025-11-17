@@ -30,7 +30,7 @@
 </head>
 <body>
 
-<h2 style="text-align:center;">Scanner un code-barres v18</h2>
+<h2 style="text-align:center;">Scanner un code-barres v19</h2>
 
 <div id="video-container">
   <div id="interactive" class="viewport"></div>
@@ -98,4 +98,30 @@ function startScanner() {
       const videoEl = document.createElement('video');
       videoEl.srcObject = stream;
       videoEl.muted = true;
-      videoEl.setAttribute("playsinlin
+      videoEl.setAttribute("playsinline", "");
+      videoEl.autoplay = true;
+      videoContainer.appendChild(videoEl);
+
+      initQuagga(videoEl);
+    })
+    .catch(err => {
+      console.error("Impossible d'accéder à la caméra :", err);
+      alert("Impossible d'accéder à la caméra. Vérifiez les permissions.");
+    });
+}
+
+// Desktop : démarrage automatique si possible
+if (navigator.mediaDevices && typeof Quagga !== "undefined") {
+  if (isMobile) {
+    startButton.style.display = "block";
+    startButton.addEventListener("click", startScanner);
+  } else {
+    startScanner();
+  }
+} else {
+  alert("Caméra non disponible ou Quagga non chargé");
+}
+</script>
+
+</body>
+</html>
