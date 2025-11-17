@@ -26,7 +26,6 @@
 <h2 style="text-align:center;">Scanner un code-barres</h2>
 <div id="video-container">
   <div id="interactive" class="viewport">
-    <video muted playsinline></video>
   </div>
 </div>
 <p id="result">Aucun code détecté</p>
@@ -39,7 +38,7 @@
       inputStream: {
         name: "Live",
         type: "LiveStream",
-         target: document.querySelector("#interactive video"),
+         target: document.querySelector("#interactive"),
         constraints: {
           facingMode: "environment" // utilise la caméra arrière
         }
